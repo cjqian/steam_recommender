@@ -1,0 +1,30 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.0.7/angular.min.js"></script>
+
+<script src="./js/jquery.js"></script>
+<script src="./js/dynatable.js"></script>
+<script src="./js/bootstrap.min.js"></script>
+<script src="./js/main.js"></script>
+
+<link rel="stylesheet" type="text/css" href="./css/dynatable.css"></link>
+<link rel="stylesheet" type="text/css" href="./css/bootstrap.min.css"></link>
+</head>
+
+<body>
+<h2>Make me a recommendation!</h2>
+<button onclick="getRecommendation() ">Click me</button>
+<div id="recommendationDiv"></div>
+
+<table id="recommendationTable" class="table table-striped">
+    <thead>
+        <th data-dynatable-column="appid">appid</th>
+        <th data-dynatable-column="name">name</th>
+    </thead>
+
+    <tbody>
+    </tbody>
+<table>
+</body>
+</html>
