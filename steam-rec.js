@@ -25,8 +25,8 @@ var zoomCall = undefined;
 function D3ok() {
 
   // Some constants
-  var WIDTH = 1200,
-      HEIGHT = 1000,
+  var WIDTH = 1000,
+      HEIGHT = 600,
       SHOW_THRESHOLD = 2.5;
 
   // Variables keeping graph state
@@ -127,23 +127,23 @@ function D3ok() {
     info = '<div id="cover">';
     //cover
     if( n.cover )
-      info += '<img class="cover" size=50% src="' + n.cover + '" title="' + n.label + '"/>';
+      info += '<img class="cover" style="width:100%" src="' + n.cover + '" title="' + n.label + '"/>';
     else
       info += '<div class=t style="float: right">' + n.title + '</div>';
     info +=
-    '<img src="close.png" class="action" style="top: 0px;" title="close panel" onClick="toggleDiv(\'movieInfo\');"/>' +
-    '<img src="target-32.png" class="action" style="top: 280px;" title="center graph on movie" onclick="selectMovie('+n.index+',true);"/>';
+    '<span class="glyphicon glyphicon-remove action" style="top: 200px" title="close panel" onClick="toggleDiv(\'movieInfo\');"/>' +
+    '<span class="glyphicon glyphicon-search action" style="top: 200px;" title="center graph on movie" onclick="selectMovie('+n.index+',true);"/>';
 
     //description
     info += '<br/></div><div style="clear: both;">'
     if( n.description )
       info += '<div class=f><span class=l>Description</span>: <span class=g>' 
-           + n.description + '</span></div>';
+           + truncateDescription(n.description) + '</span></div>';
 
     //price
     if( n.price )
       info += '<div class=f><span class=l>Price</span>: <span class=d>' 
-           + n.director + '</span></div>';
+           + setPrice(n.price) + '</span></div>';
 
     //rating
     if( n.rating )
@@ -173,7 +173,6 @@ function D3ok() {
   d3.json(
     'data/results.json',
     function(data) {
-
     // Declare the variables pointing to the node & link arrays
     var nodeArray = data.nodes;
     var linkArray = data.links;

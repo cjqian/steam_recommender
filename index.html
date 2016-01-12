@@ -22,9 +22,13 @@ function takeAction() {
     script.addEventListener('load', D3ok, false);
     script.onload = "D3ok();";
     head.appendChild(script);
+
+    //sets the steamID value
+    var steamID = "12343";
+    //steamID = document.getElementById('steamID').value;
 }
 </script>
-
+EF="javascript:history.go(0)">Click to refresh the page</A>
 <script src="js/jquery.js"></script>
 <script src="js/bootstrap.js"></script>
 
@@ -32,53 +36,57 @@ function takeAction() {
 <body onload="takeAction();">
 
 <div class="container">
-    <!-------------------------- MENU -------------------------------------->
-    <div class="row-fluid">
-        <div id="menu">
-            <ul class="nav nav-tabs">
-                <li class="active"><a data-toggle="tab" href="#chart">Chart View</a></li>
-                <li><a data-toggle="tab" href="#list">List View</a></li>
-                <li><a data-toggle="tab" href="#about">About</a><li>
-            </ul>
+<!-------------------------- MENU -------------------------------------->
+<div class="row">
+    <div id="menu">
+        <ul class="nav nav-tabs">
+            <li><a data-toggle="tab" href="#input">User Info</a></li>
+            <li class="active"><a data-toggle="tab" href="#chart">Chart View</a></li>
+            <li><a data-toggle="tab" href="#list">List View</a></li>
+            <li><a data-toggle="tab" href="#about">About</a><li>
+        </ul>
+    </div>
+</div>
+
+<div class="row">
+    <!-------------------------- NETWORK -------------------------------------->
+    <div class="tab-content col-md-10" id="page-content-wrapper">
+        <div id="input" class="table pane fade">
+            <h3>User Input</h3>
+            <!--<form id="userForm">-->
+                <!--<input type="text" name="steamID" id="steamID" value="asdf"/>-->
+                <!--<input type="button" value="click" onclick="submitSteamID()"/>-->
+            <!--</form>-->
+        </div>
+
+        <div id="chart" class="tab-pane fade in active">
+            <h3>Chart View</h3>
+            <div id="movieNetwork"></div>
+        </div>
+
+        <div id="list" class="tab-pane fade">
+            <h3>List View</h3>
+            Someday, we'll put a list div here.
+        </div>
+
+        <div id="about" class="tab-pane fade">
+            <h3>About View</h3>
+            About this sexy thing.
         </div>
     </div>
 
-    <div class="row-fluid">
-        <!-------------------------- NETWORK -------------------------------------->
-        <div class="tab-content col-md-10" id="page-content-wrapper">
-            <div id="chart" class="tab-pane fade in active">
-                <h3>Chart View</h3>
-                <div id="movieNetwork"></div>
-            </div>
+    <!------------------------- SIDE PANEL ------------------------------------>
+    <div id="sidepanel" class="fixed col-md-2">
+        <div id="title">
+        </div>    
 
-            <div id="list" class="tab-pane fade">
-                <h3>List View</h3>
-                Someday, we'll put a list div here.
-            </div>
-
-            <div id="about" class="tab-pane fade">
-                <h3>About View</h3>
-                About this sexy thing.
-            </div>
-        </div>
-
-        <!------------------------- SIDE PANEL ------------------------------------>
-        <div id="sidepanel" class="fixed col-md-2">
-            THIS IS THE ISDE PANEL
-            <div id="title">
-                This is the title
-                <img id="helpIcon" 
-                src="help-question-48.png" title="Click for help" 
-                onClick="toggleDiv('help');"/>
-
-            </div>    
-
-            <div id="movieInfo" class="panel_off"></div>
-        </div>
+        <div id="movieInfo" class="panel_off"></div>
     </div>
+</div>
 
 </div>
 <script src="steam-rec.js"></script>
+<script src="steam-rec-help.js"></script>
 </body>
 </html>
 
