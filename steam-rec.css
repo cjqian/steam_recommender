@@ -27,6 +27,8 @@ a:visited {
 /* The top-right side panel and its title child */
 
 div#sidepanel {
+    background: red;
+    min-height:1000px;
     position: absolute;
     pointer-events: none;
     top: 0px;
@@ -50,16 +52,6 @@ div#title img {
     border-width: 0px;
     margin: 0px;
 }
-
-
-img#helpIcon {
-    position: absolute; 
-    right: 6px; 
-    top: 100px; 
-    pointer-events: all; 
-    cursor: help;
-} 
-
 
 /* ....................................................................... */
 /* On/off toggles for the help/info panels */
@@ -156,6 +148,15 @@ div#close_faq {
     margin-top: 0px;
     padding: 0px;
 }
+
+/**** CRYSTAL ALL */
+.fixed{
+    width:200px;   
+}
+
+.cols{
+    min-height:100%;
+}   
 
 /* ....................................................................... */
 /* Movie details panel */

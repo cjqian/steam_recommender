@@ -33,45 +33,48 @@ function takeAction() {
 
 <div class="container">
     <!-------------------------- MENU -------------------------------------->
-    <div id="menu">
-        <ul class="nav nav-tabs">
-            <li class="active"><a data-toggle="tab" href="#chart">Chart View</a></li>
-            <li><a data-toggle="tab" href="#list">List View</a></li>
-            <li><a data-toggle="tab" href="#about">About</a><li>
-        </ul>
-    </div>
-
-
-    <!-------------------------- NETWORK -------------------------------------->
-    <div class="tab-content">
-        <div id="chart" class="tab-pane fade in active">
-            <h3>Chart View</h3>
-            <div id="movieNetwork"></div>
-        </div>
-
-        <div id="list" class="tab-pane fade">
-            <h3>List View</h3>
-            Someday, we'll put a list div here.
-        </div>
-
-        <div id="about" class="tab-pane fade">
-            <h3>About View</h3>
-            About this sexy thing.
+    <div class="row-fluid">
+        <div id="menu">
+            <ul class="nav nav-tabs">
+                <li class="active"><a data-toggle="tab" href="#chart">Chart View</a></li>
+                <li><a data-toggle="tab" href="#list">List View</a></li>
+                <li><a data-toggle="tab" href="#about">About</a><li>
+            </ul>
         </div>
     </div>
-    
-    <!------------------------- SIDE PANEL ------------------------------------>
-    <div style="background-color: blue" id="sidepanel">
 
-        <div id="title">
-            This is the title
-            <img id="helpIcon" 
-            src="help-question-48.png" title="Click for help" 
-            onClick="toggleDiv('help');"/>
+    <div class="row-fluid">
+        <!-------------------------- NETWORK -------------------------------------->
+        <div class="tab-content col-md-10" id="page-content-wrapper">
+            <div id="chart" class="tab-pane fade in active">
+                <h3>Chart View</h3>
+                <div id="movieNetwork"></div>
+            </div>
 
-        </div>    
+            <div id="list" class="tab-pane fade">
+                <h3>List View</h3>
+                Someday, we'll put a list div here.
+            </div>
 
-        <div id="movieInfo" class="panel_off"></div>
+            <div id="about" class="tab-pane fade">
+                <h3>About View</h3>
+                About this sexy thing.
+            </div>
+        </div>
+
+        <!------------------------- SIDE PANEL ------------------------------------>
+        <div id="sidepanel" class="fixed col-md-2">
+            THIS IS THE ISDE PANEL
+            <div id="title">
+                This is the title
+                <img id="helpIcon" 
+                src="help-question-48.png" title="Click for help" 
+                onClick="toggleDiv('help');"/>
+
+            </div>    
+
+            <div id="movieInfo" class="panel_off"></div>
+        </div>
     </div>
 
 </div>
