@@ -11,8 +11,8 @@
 <title>Steam Game Recommender</title>
 <link rel="stylesheet" href="steam-rec.css"/>
 <link rel="stylesheet" href="css/bootstrap.css"/>
+<link rel="stylesheet" href="css/jquery_ui.css"/>
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
-<!--<link rel="stylesheet" href="css/font-awesome.min.css"/>-->
 
 <script>
 function takeAction() {
@@ -31,8 +31,8 @@ function takeAction() {
 }
 </script>
 <script src="js/jquery.js"></script>
+<script src="js/jquery_ui.js"></script>
 <script src="js/bootstrap.js"></script>
-<script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
 </head>
 <body onload="takeAction();">
 
@@ -49,13 +49,13 @@ function takeAction() {
         <ul class="nav nav-tabs">
             <li><a data-toggle="tab" href="#input">User Info</a></li>
             <li class="active"><a data-toggle="tab" href="#chart">Chart View</a></li>
-            <li><a data-toggle="tab" href="#list">List View</a></li>
+            <li><a data-toggle="tab" href="#favorites" onClick="loadFavorites()">Favorites</a></li>
             <li><a data-toggle="tab" href="#about">About</a><li>
 
             <li style="float:right;">
     <div class="ui-widget">
             <input id="gameSearch"></input>
-            <span id="search-icon" class="glyphicon glyphicon-search" onClick="searchSelectMovie()"></span>
+            <span id="search-icon" class="glyphicon glyphicon-search" onClick="searchSelectMovie();"></span>
     </div>
         </form>
 
@@ -90,10 +90,8 @@ function takeAction() {
             </div>
         </div>
 
-        
-
-        <div id="list" class="tab-pane fade">
-            Someday, we'll put a list div here.
+        <div id="favorites" class="tab-pane fade">
+            <div id="favoritesList"></div>
         </div>
 
         <div id="about" class="tab-pane fade">

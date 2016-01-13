@@ -99,18 +99,24 @@ function D3ok() {
     /* Compose the content for the panel with movie details.
        Parameters: the node data, and the array containing all nodes
        */
+    var deletedMovies = [];
+
+    var heartArray = [];
     function getGameInfo( n, nodeArray ) {
         //landing bar
         info =
-            '<div>' 
+            '<div id="gameInfo" class="gameInfo' + n.index + '">' 
             + '<span class="right-icon glyphicon glyphicon-remove action" title="close panel" onClick="toggleDiv(\'movieInfo\');"></span>' 
             + '<span class="right-icon glyphicon glyphicon-search action" title="center graph on game" onclick="selectMovie('+n.index+',true);"></span>' 
-            + "<span class='right-icon' title='steam page'><a href='http://store.steampowered.com/app/" + n.steam_id + "'" + '><i class="fa fa-steam-square"></i></a></span>' 
+            + '<span class="right-icon" title="steam page"><a href="' + getSteamUrl(n.steam_id) + '"><i class="fa fa-steam-square"></i></a></span>';
 
+        if (heartArray.indexOf(n.index) == -1){
+            info +=  '<span class="left-icon glyphicon glyphicon-heart action" id="heart-icon" title="add to favorites" onclick="heartMovie('+n.index+');"></span>';
+           } else {
+            info += '<span class="left-icon glyphicon glyphicon-heart action pink" id="heart-icon" title="add to favorites" onclick="heartMovie('+n.index+');"></span>';
+           }
 
-            + '<span class="left-icon glyphicon glyphicon-heart action" title="remove game from graph" onclick="heartMovie('+n.index+');"></span>'
-            + '<span class="left-icon glyphicon glyphicon-trash action" title="remove game from graph" onclick="removeMovie('+n.index+');"></span>'
-
+        info += '<span class="left-icon glyphicon glyphicon-trash action" title="remove game from graph" onclick="removeMovie('+n.index+');"></span>'
             + '</div>';
 
         //cover
@@ -136,8 +142,6 @@ function D3ok() {
                 + n.label + '</span></div>';
         }
 
-
-
         //rating
         if( n.rating )
             info += '<div class=f><span class=l>Rating</span>: <a href= ' + n.rating.url + '/><span class=c>' 
@@ -159,8 +163,12 @@ function D3ok() {
         info += "<ul>";
 
         n.links.forEach( function(idx) {
-            info += '<li><a href="javascript:void(0);" onclick="selectMovie('  
-            + idx + ',true);">' + nodeArray[idx].label + '</a></li>'
+            if (deletedMovies.indexOf(idx) == -1){
+                info += '<li><a href="javascript:void(0);" onclick="selectMovie('  
+                    + idx + ',true);">' + nodeArray[idx].label + '</a></li>'
+            } else {
+                info += '<li>' + nodeArray[idx].label + '</li>'
+            }
         });
 
         info += "</ul>";
@@ -318,11 +326,92 @@ function D3ok() {
     }
 
     /* -----------------------------------------------------------------------*/
-    var heartArray = [];
     heartMovie = function( idx ){
-        heartArray.push(idx);
-        console.log(heartArray);
-        console.log(idx);
+        $("#heart-icon").toggleClass("pink");
+        if (heartArray.indexOf(idx) == -1){
+            heartArray.push(idx);
+        } else {
+            removeFromFavorites(idx);
+        }
+    }
+
+    removeFromFavorites = function(nodeIdx){
+        if ($( "#gameInfo" ).hasClass("gameInfo" + nodeIdx))
+            $("#heart-icon").toggleClass("pink");
+        var heartIdx = heartArray.indexOf(nodeIdx);
+        if (heartIdx > -1){
+            heartArray.splice(heartIdx, 1);
+            loadFavorites();
+        }
+    }
+
+    /* Loads the favorites tab */
+    loadFavorites = function() {
+
+        movieInfoDiv = d3.select("#movieInfo");
+        var info = "";
+
+        //no favorites
+        if (heartArray.length == 0){
+            info += "<div id='noFavorites'>No favorites to show.</div>";    
+            d3.select("#favoritesList").html( info );
+            return;
+        } 
+
+        //iterate through all rows
+        var nRows = Math.ceil(heartArray.length);
+        var curIdx = 0;
+        for (var i = 0; i < nRows; i++){
+            if (curIdx >= heartArray.length){
+                d3.select("#favoritesList").html( info );
+                return;
+            }
+
+            info += "<div class='row favoritesRow'>";
+
+            for (var j = 0; j < 4; j++){
+                if (curIdx >= heartArray.length){
+                    d3.select("#favoritesList").html( info );
+                    return;
+                }
+
+                var curNode = nodeArray[heartArray[curIdx]];
+
+                info += "<div class='col-md-3 favoritesItem'><div class='thumbnail'>";
+
+                info += "<img src='" + curNode.cover + "' alt='" + curNode.title + "'>";
+                info += "<div class='caption'>";
+                info += "<a href='" + curNode.website + "'><h3>" + curNode.title + "</h3></a>";
+                info += "<p><ul style='list-style-type:none; padding-left:0;'>";
+
+                if (curNode.rating){
+                    info += "<li><b>Rating: </b>" 
+                        + "<a href='" + curNode.rating.url + "'>" + curNode.rating.score + "</a></li>";
+                }
+
+                if (curNode.recommendations){
+                    info += "<li><b>Recommendations: </b>"
+                        + curNode.recommendations + "</li>";
+                }
+
+                if (curNode.price){
+                    info += "<li><b>Price: </b>"
+                        + setPrice(curNode.price) + "</li>"; 
+                }
+
+                info += "</ul></p>";
+
+                //buttons
+                info += "<p><a href='" + getSteamUrl(curNode.steam_id) 
+                    + "' class='btn btn-primary' role='button'>See on Steam</a> <span class='btn btn-default' role='button' onClick='removeFromFavorites("
+                    + heartArray[curIdx] + ");'>Remove from Favorites</span></p>";
+                info += "</div></div></div>";
+
+                curIdx++;
+            }
+            info += "</div>";
+        }
+        d3.select("#favoritesList").html( info );
     }
 
     /* Removes a game from the graph */
@@ -350,10 +439,12 @@ function D3ok() {
                 var nodeIdx = linkClass.substring(1, linkClass.length); 
                 d3.select('#c' + nodeIdx).remove();
                 d3.select('#l' + nodeIdx).remove();
+                deletedMovies.push(nodeIdx);
             }
         }
- 
+    
         //update();
+        deletedMovies.push(idx);
         node.remove();
         label.remove();
         links.remove();
@@ -375,7 +466,8 @@ function D3ok() {
     var nameArray = [];
     populateNameArray = function(){
         for (var i = 0; i < nodeArray.length; i++){
-            nameArray.push(nodeArray[i].label);
+            if (nameArray.indexOf(nodeArray[i].label) == -1)
+                nameArray.push(nodeArray[i].label);
         }
     }
 

@@ -12,8 +12,22 @@
     padding:3px;
 }
 
-body {
-    background-color: #f6f6f6;
+/* UI weird bug */
+.ui-helper-hidden-accessible{
+    color: #fff;
+}
+
+.pink{
+   color: pink;
+}
+
+.favoritesItem{
+       opacity: .8;
+   transition: all 0.2s ease-in-out;
+}
+
+.favoritesItem:hover{
+    opacity: 1;
 }
 
 /* HREF links */
