@@ -2,6 +2,16 @@
    (c) TelefÃ³nica I+D, 2013
    Author: Paulo Villegas
    ------------------------------------------------------------------------- */
+.right-icon{
+    float:right;
+    padding:3px;
+}
+
+.left-icon{
+    float:left;
+    padding:3px;
+}
+
 .complete{
     display:none;
 }
@@ -28,10 +38,12 @@ a:visited {
 /* ....................................................................... */
 /* The top-right side panel and its title child */
 
+/* sidebar */
 div#sidepanel {
+    overflow:auto;
     background: #eee;
-    min-height:1000px;
-    position: absolute;
+    min-height:900px;
+    /*position: absolute;*/
     pointer-events: none;
     top: 0px;
     right: 0px;
@@ -68,89 +80,6 @@ div.panel_on {
     pointer-events: all;
 }
 
-
-/* ....................................................................... */
-/* Help boxes */
-
-div#help {
-    margin: 6px;
-    padding: 4px;
-    background-color: #DEDFA3;
-    position: absolute;
-    width: 420px;
-    right: 0px;
-    z-index: 1001;
-    border: 1px solid #989970;
-
-    font-family: Georgia, Times New Roman, Times, serif;
-    font-size: 11pt;
-
-    -moz-transition: visibility 1.2s;
-    -o-transition: visibility 1.2s;
-    -webkit-transition: visibility 1.2s;
-    transition: visibility 1.2s;
-
-    -webkit-border-radius: 10px;
-    -moz-border-radius: 10px;
-    border-radius: 10px;
-
-    -webkit-box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
-    -moz-box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
-    box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
-}
-
-div#help ul {
-    margin: 0.5em 0em 0.5em 0em;
-    padding-left: 1.5em;
-    
-}
-
-div#help li {
-    margin: 0em;
-    padding: 0px;
-}
-
-div#faq {
-    position: absolute;
-    top: 6px;
-    left: 6px;
-    padding: 4px;
-    width: 860px;
-    height: 600px;
-    overflow-y: auto;
-    z-index: 1002;
-    background: #E5E4D6;
-
-    font-size: 11pt;
-
-    border: solid 1px #aaa;
-    border-radius: 8px;    
-    -webkit-box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
-    -moz-box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
-    box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
-}
-
-div#faq dt {
-    font-family: Verdana, Arial, Helvetica, sans-serif;
-    font-size: 13pt;    
-    color: #5D1D4D;
-    font-weight: bold;
-    margin-top: .4em;
-}
-
-div#faq dd {
-    font-family: Georgia, Times New Roman, Times, serif;
-    padding-left: 0px;
-    margin-left: 0.7em;
-}
-
-div#close_faq {
-    position: fixed; 
-    margin-left: 820px; 
-    margin-top: 0px;
-    padding: 0px;
-}
-
 /**** CRYSTAL ALL */
 .fixed{
     width:200px;   
@@ -164,6 +93,7 @@ div#close_faq {
 /* Movie details panel */
 
 div#movieInfo {
+    max-height: 900px;
     /*position: relative;*/
     /*right: 4px;*/
     /*cursor: text;*/
@@ -180,7 +110,6 @@ div#movieInfo {
 
 div#movieInfo div#cover {
     text-align: left; 
-    height: 300px;
 }
 
 div#movieInfo div.t {
@@ -190,7 +119,7 @@ div#movieInfo div.t {
 
 div#movieInfo img.cover {
     margin-bottom: 6px;
-    position: absolute;
+    /*position: absolute;*/
     right: 3px;
 }
 

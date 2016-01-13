@@ -11,6 +11,8 @@
 <title>Steam Game Recommender</title>
 <link rel="stylesheet" href="steam-rec.css"/>
 <link rel="stylesheet" href="css/bootstrap.css"/>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+<!--<link rel="stylesheet" href="css/font-awesome.min.css"/>-->
 
 <script>
 function takeAction() {
@@ -28,14 +30,19 @@ function takeAction() {
     //steamID = document.getElementById('steamID').value;
 }
 </script>
-EF="javascript:history.go(0)">Click to refresh the page</A>
 <script src="js/jquery.js"></script>
 <script src="js/bootstrap.js"></script>
 
 </head>
 <body onload="takeAction();">
 
-<div class="container">
+<div class="container" style="width:80%">
+<!-----------HEADER-------------------------------------->
+<div class="page-header">
+    <h1> Steam Recommender 
+    <small> A Visualization </small>
+    </h1>
+</div>
 <!-------------------------- MENU -------------------------------------->
 <div class="row">
     <div id="menu">
@@ -50,38 +57,42 @@ EF="javascript:history.go(0)">Click to refresh the page</A>
 
 <div class="row">
     <!-------------------------- NETWORK -------------------------------------->
-    <div class="tab-content col-md-10" id="page-content-wrapper">
+    <div class="tab-content" id="page-content-wrapper">
         <div id="input" class="table pane fade">
-            <h3>User Input</h3>
+            <!--<h3>User Input</h3>-->
             <!--<form id="userForm">-->
-                <!--<input type="text" name="steamID" id="steamID" value="asdf"/>-->
-                <!--<input type="button" value="click" onclick="submitSteamID()"/>-->
+            <!--<input type="text" name="steamID" id="steamID" value="asdf"/>-->
+            <!--<input type="button" value="click" onclick="submitSteamID()"/>-->
             <!--</form>-->
         </div>
 
         <div id="chart" class="tab-pane fade in active">
-            <h3>Chart View</h3>
-            <div id="movieNetwork"></div>
+            <div id="chart" class="col-md-9">
+                <div id="movieNetwork"></div>
+            </div>
+
+            <div id="sidepanel" class="fixed col-md-3">
+                <div id="title">
+                </div>    
+
+                <div id="movieInfo" class="panel_off"></div>
+            </div>
         </div>
 
+        
+
         <div id="list" class="tab-pane fade">
-            <h3>List View</h3>
             Someday, we'll put a list div here.
         </div>
 
         <div id="about" class="tab-pane fade">
-            <h3>About View</h3>
+            Size represents how good a game was (rating).
+            Thickness of line implies closeness of correlation.
             About this sexy thing.
         </div>
     </div>
 
     <!------------------------- SIDE PANEL ------------------------------------>
-    <div id="sidepanel" class="fixed col-md-2">
-        <div id="title">
-        </div>    
-
-        <div id="movieInfo" class="panel_off"></div>
-    </div>
 </div>
 
 </div>

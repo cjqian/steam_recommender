@@ -25,16 +25,27 @@ tLinks = []
 
 #set gameRecommendations, a map of titles to their recommendations
 gameLib = {}
+gameAlias = {}
 def mapGameLib(jsonData):
     for game in jsonData:
         gameLib[game["id"]] =  game["recommendations"]
-with open("game_library.json") as data_file:
+        gameAlias[game["id"]] = game["name"]
+
+with open("game_rec_library.json") as data_file:
    mapGameLib(json.load(data_file)) 
 
 #fixes formatting of recommendation
 def removeBadThings(description):
     description = re.sub(r'<img src=(.*?)>', "", description)
     description = re.sub(r'\"', '\'', description)
+    
+    #change h1s to h5s
+    description = re.sub(r'<h1', '<h5', description)
+    description = re.sub(r'</h1>', '</h5>', description)
+
+    #change h2s and h3s to h6s
+    description = re.sub(r'<h[2-3]', '<h6', description)
+    description = re.sub(r'</h[2-3]>', '</h6>', description)
 
     return description
 
@@ -70,9 +81,9 @@ def addObject(request, level):
         tObjects.append(fObject)
 
         fObject["links"] = []
-        print(level)
+
         #only level one get links
-        if level < 2:
+        if level < numLevels:
             success = setLinks(fObject)
             if success is None:
                 #print("Links failed for " + fObject["title"])
@@ -117,29 +128,28 @@ def requestGame(steamID, gameTitle):
         requestGame(steamID, newName)
     #we found some similar results!
     else:
-        print("Found recommendations for " + gameTitle)
         #set the data
         recommendations = []
         #add all the recommendations to the list
         for game in data:
-            print("added recommendation " + game["Name"])
             recommendations.append(game["Name"])
 
         gameLib[steamID] = recommendations
-        print(gameLib[steamID])
-
-        return;
+        gameAlias[steamID] = gameTitle
+        return
 
 def setLinks(fObject): 
     #print ("Setting links for " + fObject["title"])
     gameTitle = html_parser.unescape(fObject["title"])
     steamID = fObject["steam_id"] 
+
     #if not in our library yet, we add it to the library
     if steamID not in gameLib.keys():
-        print("game " + gameTitle + " not in lbirary yet")
-        for game in gameLib:
-            print("library: " + game)
         requestGame(steamID, gameTitle)
+
+    #shoulalways happen
+    if steamID in gameAlias.keys():
+        fObject["label"] = gameAlias[steamID]
 
     maxNumGames = 5
     curNumGames = 0
@@ -147,7 +157,6 @@ def setLinks(fObject):
     #iterate through all games
     weight = 1
     for game in gameLib[steamID]:
-        print("Iterating through " + game)
         if curNumGames == maxNumGames:
             break
 
@@ -174,6 +183,10 @@ def setLinks(fObject):
     return []
 
 def makeLink(fObject, nObject, weight):
+    #link already exists?
+    if nObject["id"] in fObject["links"]:
+        print(str(fObject["id"]) + " already linked to " + str(nObject["id"]))
+        return 
     fObject["links"].append(nObject["id"])
     nObject["links"].append(fObject["id"])
     
@@ -193,12 +206,19 @@ def getGame(title):
 
 #gets a request from the api and returns a JSON object with the necessary strings
 def getObject(appID):
-        idParams = {"appids": appID}
-        base = "http://store.steampowered.com/api/appdetails"
-        request = requests.get(base, params=idParams)
-           
-        return (request.json()[str(appID)])        
- 
+    print("Get object with id " + str(appID))
+
+    idParams = {"appids": appID}
+    base = "http://store.steampowered.com/api/appdetails"
+    request = requests.get(base, params=idParams)
+   
+    if (request is None) or (request == '') or (request.json() is None):
+
+        print("request for " + str(appID) + "did not get")
+        return -1
+
+    return (request.json()[str(appID)])        
+
 def getUserGames(userID):
         idParams = {"key": "B820C0655B63E2F4C8947D1F3B0A3E90", "steamid": userID, "format" : "json"}
         base = "http://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/"
@@ -209,6 +229,9 @@ def getUserGames(userID):
 def setObject(appID, level):
     #print("Setting object with id " + str(appID))
     object = getObject(appID)
+    if object == -1:
+        print(str(appID) + " invalid")
+        return -1
 
     if (object["success"] is True):
         fObject = addObject(object["data"], level)
@@ -219,8 +242,14 @@ def setObject(appID, level):
 
     return -1
 
+userID = int(sys.argv[1]) 
+maxNumGames = int(sys.argv[2])
+numLevels = int(sys.argv[3])
+
+#python make_results.py maxNumGames
 def main():
-    userID = 76561198008637711
+    
+    #userID = 76561198008637711
     #userID =76561198060927907
     data = getUserGames(userID)
     #get games
@@ -228,8 +257,8 @@ def main():
 
     #sort by playtime
     games = sorted(games, key=lambda k: k["playtime_forever"], reverse=True)
+
     #crop length if greater than 10
-    maxNumGames = 1;
     curNumGames = 0;
 
     for game in games:
@@ -244,10 +273,6 @@ def main():
     result["nodes"] = tObjects
     result["links"] = tLinks
 
-    print("Printing game library now.")
-    for game in gameLib:
-        print game
-        print gameLib[game]
     #write to file "results_123542.json"
     fileName = "results_" + str(userID) + ".json"
     f = open(fileName, 'w')
@@ -260,13 +285,11 @@ def main():
         newGame = {}
         print(game + " IS IN GAME LIB")
         newGame["id"] = game
+        newGame["name"] = gameAlias[game]
         newGame["recommendations"] = gameLib[game]
         gameLibrary.append(newGame)
 
-    print("final library")
-    print(gameLibrary)
-
-    f = open('game_library.json', 'w')
+    f = open('game_rec_library.json', 'w')
     f.write(json.JSONEncoder().encode(gameLibrary))
     f.close()
 
