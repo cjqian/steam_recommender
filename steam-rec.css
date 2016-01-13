@@ -1,15 +1,33 @@
 .right-icon{
     float:right;
     padding:3px;
+    font-size: 20px;
+}
+a:visited{
+    color:#a7dbd8;
+}
+
+.fa-steam-square{
+    color: #031634;
+}
+
+.pink{
+    color: #fa6900;
+}
+
+.fa:hover{
+    opacity: .8;
+    cursor: pointer;
 }
 
 .left-icon{
     float:left;
-    padding:3px;
+    padding:4px;
+    font-size: 20px;
 }
 
 #search-icon{
-    padding:3px;
+    padding:4px;
 }
 
 /* UI weird bug */
@@ -17,13 +35,15 @@
     color: #fff;
 }
 
-.pink{
-   color: pink;
-}
-
 .favoritesItem{
        opacity: .8;
    transition: all 0.2s ease-in-out;
+    overflow:hidden;
+}
+
+.favoritesItemTitle{
+    height:60px;
+    overflow:ellipse;
 }
 
 .favoritesItem:hover{
@@ -134,7 +154,7 @@ div#movieInfo img.action {
 }
 
 div#movieInfo div.f {
-    border-top: 1px solid  #8E5981;
+    border-top: 1px solid  #a7dbd8;
     margin-bottom: 3px;
     margin-top: 3px;
 }
@@ -149,7 +169,7 @@ div#movieInfo span.c {
 
 div#movieInfo span.l {
     font-size: 15px;
-    color: #24553E;
+    color: #031634;
 }
 
 /* ....................................................................... */
@@ -161,38 +181,33 @@ div#movieNetwork svg {
 }
 
 line.link {
-    stroke: #B2D9D8;
+    stroke: #69d2e7;
 }
 
 circle {
     cursor: crosshair;
-    fill: #EBC763;
 }
 
 circle.level1 {
-    stroke: #f00;
+    fill: #031634;
 }
 
 circle.level2 {
-    fill-opacity: 0.8;
     stroke-opacity: 0.8;
-    stroke: #777;
+    fill: #036564;
 }
 
 circle.level3 {
-    fill-opacity: 0.5;
+    fill: #a7dbd8;
     stroke-opacity: 0.5;
 }
 
 circle.sibling {
-    /*fill: blue;*/
-    fill: #455EE8;
+    fill:#f38630;
 }
 
 circle.main {
-    /*fill: red;*/
-    fill: #732A9A;
-    fill-opacity: 1.0;
+    fill: #fa6900;
 }
 
 /* ....................................................................... */

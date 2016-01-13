@@ -20,6 +20,8 @@ var zoomCall = undefined;
 
 
 // -------------------------------------------------------------------
+var minRating;
+var maxRating;
 
 // Do the stuff -- to be called after D3.js has loaded
 function D3ok() {
@@ -96,6 +98,18 @@ function D3ok() {
         return match && decodeURIComponent(match[1].replace(/\+/g, ' '));
     }
 
+ /* Change status of a panel from visible to hidden or viceversa
+     id: identifier of the div to change
+     status: 'on' or 'off'. If not specified, the panel will toggle status
+  */
+  toggleDiv = function( id, status ) {
+    d = d3.select('div#'+id);
+    if( status === undefined )
+      status = d.attr('class') == 'panel_on' ? 'off' : 'on';
+    d.attr( 'class', 'panel_' + status );
+    return false;
+  }
+
     /* Compose the content for the panel with movie details.
        Parameters: the node data, and the array containing all nodes
        */
@@ -106,17 +120,17 @@ function D3ok() {
         //landing bar
         info =
             '<div id="gameInfo" class="gameInfo' + n.index + '">' 
-            + '<span class="right-icon glyphicon glyphicon-remove action" title="close panel" onClick="toggleDiv(\'movieInfo\');"></span>' 
-            + '<span class="right-icon glyphicon glyphicon-search action" title="center graph on game" onclick="selectMovie('+n.index+',true);"></span>' 
-            + '<span class="right-icon" title="steam page"><a href="' + getSteamUrl(n.steam_id) + '"><i class="fa fa-steam-square"></i></a></span>';
-
+            + '<span class="right-icon" title="close panel" onClick="toggleDiv(\'movieInfo\');"><i class="fa fa-times"></i></span>' 
+            + '<span class="right-icon" title="steam page"><a href="' + getSteamUrl(n.steam_id) + '"><i class="fa fa-steam-square"></i></a></span>'
+            + '<span class="right-icon" title="center graph on game" onclick="selectMovie('+n.index+',true);"><i class="fa fa-bullseye"></i></span>'; 
         if (heartArray.indexOf(n.index) == -1){
-            info +=  '<span class="left-icon glyphicon glyphicon-heart action" id="heart-icon" title="add to favorites" onclick="heartMovie('+n.index+');"></span>';
+
+            info += '<span class="left-icon" id="heart-icon" title="add to favorites" onclick="heartMovie('+n.index+');"><i class="fa fa-heart" id="heart-icon"></i></span>';
            } else {
-            info += '<span class="left-icon glyphicon glyphicon-heart action pink" id="heart-icon" title="add to favorites" onclick="heartMovie('+n.index+');"></span>';
+            info += '<span class="left-icon" title="add to favorites" onclick="heartMovie('+n.index+');"><i class="fa fa-heart pink" id="heart-icon"></i></span>';
            }
 
-        info += '<span class="left-icon glyphicon glyphicon-trash action" title="remove game from graph" onclick="removeMovie('+n.index+');"></span>'
+        info += '<span class="left-icon" title="remove game from graph" onclick="removeMovie('+n.index+');"><i class="fa fa-trash"></i></span>'
             + '</div>';
 
         //cover
@@ -174,6 +188,18 @@ function D3ok() {
         info += "</ul>";
         info += '</div>';
 
+        //genres
+        if (n.genres.length > 0){
+        info += '<div class=f><span class=l>Genres</span>: ';
+
+        info += "<ul>";
+            for (var i = 0; i < n.genres.length; i++){
+                info += '<li>' + n.genres[i].description + '</li>';
+            }
+        info += "</ul>";
+        info += '</div>';
+        }
+
         if( n.description )
             info += '<div class=f><span class=l>Description</span>:<br/> <span class=g>' 
                 + n.description + '</span></div>';
@@ -181,19 +207,21 @@ function D3ok() {
         return info;
     }
 
-
     // *************************************************************************
-    d3.json(
+       d3.json(
             'data/results.json',
             function(data) {
                 // Declare the variables pointing to the node & link arrays
                 var nodeArray = data.nodes;
                 var linkArray = data.links;
 
-                minScoreWeight = 
+    minScoreWeight = 
         Math.min.apply( null, nodeArray.map( function(n) {return n["rating"]["score"];} ) );
     maxScoreWeight = 
         Math.max.apply( null, nodeArray.map( function(n) {return n["rating"]["score"];} ) );
+
+    minRating = minScoreWeight;
+    maxRating = maxScoreWeight;
 
     minLinkWeight = 
         Math.min.apply( null, linkArray.map( function(n) {return n.weight;} ) );
@@ -252,7 +280,6 @@ function D3ok() {
         .attr('r', function(d) { 
             return (node_size(d["rating"]["score"])); } )
         .attr('pointer-events', 'all')
-        //.on("click", function(d) { highlightGraphNode(d,true,this); } )    
         .on("click", function(d) { showMoviePanel(d); } )
         .on("mouseover", function(d) { highlightGraphNode(d,true,this);  } )
         .on("mouseout",  function(d) { highlightGraphNode(d,false,this); } ); //maybe, keeps hover
@@ -260,7 +287,7 @@ function D3ok() {
     // labels: a group with two SVG text: a title and a shadow (as background)
     var graphLabels = networkGraph.append('svg:g').attr('class','grp gLabel')
         .selectAll("g.label")
-        .data( nodeArray, function(d){return d.label} )
+        .data( nodeArray, function(d){ return d.label;} )
         .enter().append("svg:g")
         .attr('id', function(d) { return "l" + d.index; } )
         .attr('class','label');
@@ -268,7 +295,7 @@ function D3ok() {
     shadows = graphLabels.append('svg:text')
         .attr('x','-2em')
         .attr('y','-.3em')
-        .attr('pointer-events', 'none') // they go to the circle beneath
+       // .attr('pointer-events', 'none') // they go to the circle beneath
         .attr('id', function(d) { return "lb" + d.index; } )
         .attr('class','nshadow')
         .text( function(d) { return d.label; } );
@@ -299,10 +326,10 @@ function D3ok() {
             highlightGraphNode( nodeArray[activeMovie], false );
         }
 
+
         // locate the SVG nodes: circle & label group
         circle = d3.select( '#c' + node.index );
         label  = d3.select( '#l' + node.index );
-
         // activate/deactivate the node itself
         circle
             .classed( 'main', on );
@@ -310,7 +337,6 @@ function D3ok() {
             .classed( 'on', on || currentZoom >= SHOW_THRESHOLD );
         label.selectAll('text')
             .classed( 'main', on );
-
         // activate all siblings
         Object(node.links).forEach( function(id) {
             d3.select("#c"+id).classed( 'sibling', on );
@@ -327,18 +353,34 @@ function D3ok() {
 
     /* -----------------------------------------------------------------------*/
     heartMovie = function( idx ){
-        $("#heart-icon").toggleClass("pink");
         if (heartArray.indexOf(idx) == -1){
+            $("#heart-icon").toggleClass("pink");
+            //edit this part
+            d3.select('#c' + idx)
+                .style('fill', '#fa6900');
+
             heartArray.push(idx);
         } else {
             removeFromFavorites(idx);
         }
     }
 
-    removeFromFavorites = function(nodeIdx){
-        if ($( "#gameInfo" ).hasClass("gameInfo" + nodeIdx))
-            $("#heart-icon").toggleClass("pink");
-        var heartIdx = heartArray.indexOf(nodeIdx);
+    removeFromFavorites = function(idx){
+        $("#heart-icon").removeClass("pink");
+
+        //change color back
+        if ($('#c' + idx).hasClass('level1')){
+            d3.select('#c' + idx)
+                .style('fill', '#031634');
+        } else if ($('#c' + idx).hasClass('level2')){
+            d3.select('#c' + idx)
+                .style('fill', '#036564');
+        } else {
+            d3.select('#c' + idx)
+                .style('fill', '#a7dbd8');
+        }
+               
+        var heartIdx = heartArray.indexOf(idx);
         if (heartIdx > -1){
             heartArray.splice(heartIdx, 1);
             loadFavorites();
@@ -359,7 +401,8 @@ function D3ok() {
         } 
 
         //iterate through all rows
-        var nRows = Math.ceil(heartArray.length);
+        var nRows = Math.ceil(heartArray.length / 4);
+        console.log("Number of rows: " + nRows + ", " + heartArray.length);
         var curIdx = 0;
         for (var i = 0; i < nRows; i++){
             if (curIdx >= heartArray.length){
@@ -381,8 +424,8 @@ function D3ok() {
 
                 info += "<img src='" + curNode.cover + "' alt='" + curNode.title + "'>";
                 info += "<div class='caption'>";
-                info += "<a href='" + curNode.website + "'><h3>" + curNode.title + "</h3></a>";
-                info += "<p><ul style='list-style-type:none; padding-left:0;'>";
+                info += "<a href='" + curNode.website + "'><h3 class='favoritesItemTitle'>" + curNode.title + "</h3></a>";
+                info += "<p class='favoritesItemContent'><ul style='list-style-type:none; padding-left:0;'>";
 
                 if (curNode.rating){
                     info += "<li><b>Rating: </b>" 
@@ -393,6 +436,19 @@ function D3ok() {
                     info += "<li><b>Recommendations: </b>"
                         + curNode.recommendations + "</li>";
                 }
+
+                if (curNode.genres.length > 0){
+                    info += '<li><b>Genres: </b> ';
+
+                    var i;
+                    for (i = 0; i < curNode.genres.length - 1; i++){
+                        info += curNode.genres[i].description + ', ';
+                    }
+                     
+                    info += curNode.genres[i].description;
+                    info += '</li>';
+                }
+
 
                 if (curNode.price){
                     info += "<li><b>Price: </b>"
@@ -405,6 +461,7 @@ function D3ok() {
                 info += "<p><a href='" + getSteamUrl(curNode.steam_id) 
                     + "' class='btn btn-primary' role='button'>See on Steam</a> <span class='btn btn-default' role='button' onClick='removeFromFavorites("
                     + heartArray[curIdx] + ");'>Remove from Favorites</span></p>";
+                
                 info += "</div></div></div>";
 
                 curIdx++;
@@ -581,6 +638,20 @@ function D3ok() {
     }
 
 
+    /**** SLIDER **/
+    $(document).ready(function(){
+        var maxPrice = 0;
+        var minPrice = 100000000;
+
+            prices = [];
+        for (var i = 0; i < nodeArray.length; i++){
+            if (nodeArray[i]["price"]){
+                prices.push(nodeArray[i]["price"]);
+                if (prices[i] > maxPrice) maxPrice = prices[i];
+                if (prices[i] < minPrice) minPrice = prices[i];
+            }           
+        }
+           });
     /* --------------------------------------------------------------------- */
     /* Perform zoom. We do "semantic zoom", not geometric zoom
      * (i.e. nodes do not change size, but get spread out or stretched
