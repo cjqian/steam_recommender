@@ -1,7 +1,3 @@
-/* ---------------------------------------------------------------------------
-   (c) TelefÃ³nica I+D, 2013
-   Author: Paulo Villegas
-   ------------------------------------------------------------------------- */
 .right-icon{
     float:right;
     padding:3px;
@@ -12,8 +8,8 @@
     padding:3px;
 }
 
-.complete{
-    display:none;
+#search-icon{
+    padding:3px;
 }
 
 body {
@@ -60,11 +56,6 @@ div#title {
     color: #5D1D4D;
     font-weight: bold;
     pointer-events: none;
-}
-
-div#title img {
-    border-width: 0px;
-    margin: 0px;
 }
 
 /* ....................................................................... */

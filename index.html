@@ -32,7 +32,7 @@ function takeAction() {
 </script>
 <script src="js/jquery.js"></script>
 <script src="js/bootstrap.js"></script>
-
+<script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
 </head>
 <body onload="takeAction();">
 
@@ -51,8 +51,19 @@ function takeAction() {
             <li class="active"><a data-toggle="tab" href="#chart">Chart View</a></li>
             <li><a data-toggle="tab" href="#list">List View</a></li>
             <li><a data-toggle="tab" href="#about">About</a><li>
-        </ul>
+
+            <li style="float:right;">
+    <div class="ui-widget">
+            <input id="gameSearch"></input>
+            <span id="search-icon" class="glyphicon glyphicon-search" onClick="searchSelectMovie()"></span>
     </div>
+        </form>
+
+
+            </li>
+        </ul>
+
+            </div>
 </div>
 
 <div class="row">

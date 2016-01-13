@@ -96,7 +96,6 @@ function D3ok() {
         return match && decodeURIComponent(match[1].replace(/\+/g, ' '));
     }
 
-
     /* Compose the content for the panel with movie details.
        Parameters: the node data, and the array containing all nodes
        */
@@ -115,9 +114,16 @@ function D3ok() {
             + '</div>';
 
         //cover
+        info += '<div id="brokenCover"></div>';
         info += '<div id="cover">';
         if( n.cover )
-            info += '<img class="cover" style="width:100%" src="' + n.cover + '" title="' + n.label + '"/></div>';
+            info += '<img class="cover" style="width:100%" src="' 
+                + n.cover 
+                + '" title="' 
+                + n.label 
+                + '" onError="imageError(' 
+                + n.title 
+                + ');"/></div>';
         else
             info += '<div class=t style="float: right">' + n.title + '</div></div>';
 
@@ -192,7 +198,7 @@ function D3ok() {
         .links(linkArray)
         .start();
 
-    // A couple of scales for node radius & edge width
+        // A couple of scales for node radius & edge width
     var node_size = d3.scale.linear()
         .domain([minScoreWeight, maxScoreWeight])   // we know score is in this domain
         .range([5, 16]) //good size
@@ -322,6 +328,8 @@ function D3ok() {
     /* Removes a game from the graph */
     removeMovie = function( idx ){
         var node = d3.select('#c' + idx);
+        var label  = d3.select( '#l' + idx );
+
         var links = d3.selectAll('.l' + idx);
 
         //we remove all the lonely nodes
@@ -341,11 +349,13 @@ function D3ok() {
                 var linkClass = otherLinks[0][0]["classList"][otherAttr];
                 var nodeIdx = linkClass.substring(1, linkClass.length); 
                 d3.select('#c' + nodeIdx).remove();
+                d3.select('#l' + nodeIdx).remove();
             }
         }
  
         //update();
         node.remove();
+        label.remove();
         links.remove();
         /* Then, remove all links */
         /* First, get an array of */    
@@ -360,6 +370,31 @@ function D3ok() {
        - doMoveTo: boolean to indicate if the graph should be centered
        on the movie
        */
+
+    /* SEARCH FUNCTION */
+    var nameArray = [];
+    populateNameArray = function(){
+        for (var i = 0; i < nodeArray.length; i++){
+            nameArray.push(nodeArray[i].label);
+        }
+    }
+
+    //populate name array
+    populateNameArray();
+
+    $( "#gameSearch" ).autocomplete({
+      source: nameArray
+    });
+
+    searchSelectMovie = function(){
+        var gameName = document.getElementById("gameSearch").value;
+        var index = nameArray.indexOf(gameName);
+    
+        if (index != -1){
+            selectMovie(index, true);
+        }
+    }
+
     selectMovie = function( new_idx, doMoveTo ) {
 
         // do we want to center the graph on the node?
