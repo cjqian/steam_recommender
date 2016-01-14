@@ -67,6 +67,8 @@ function D3ok() {
 
     // Movie panel: the div into which the movie details info will be written
     movieInfoDiv = d3.select("#movieInfo");
+    var removedNodes = [];
+    var removedLinks = [];
 
     /* ....................................................................... */
 
@@ -91,30 +93,26 @@ function D3ok() {
                 y: d.body.scrollTop};
     }
 
-
-
     function getQStringParameterByName(name) {
         var match = RegExp('[?&]' + name + '=([^&]*)').exec(window.location.search);
         return match && decodeURIComponent(match[1].replace(/\+/g, ' '));
     }
 
- /* Change status of a panel from visible to hidden or viceversa
-     id: identifier of the div to change
-     status: 'on' or 'off'. If not specified, the panel will toggle status
-  */
-  toggleDiv = function( id, status ) {
-    d = d3.select('div#'+id);
-    if( status === undefined )
-      status = d.attr('class') == 'panel_on' ? 'off' : 'on';
-    d.attr( 'class', 'panel_' + status );
-    return false;
-  }
+    /* Change status of a panel from visible to hidden or viceversa
+       id: identifier of the div to change
+       status: 'on' or 'off'. If not specified, the panel will toggle status
+       */
+    toggleDiv = function( id, status ) {
+        d = d3.select('div#'+id);
+        if( status === undefined )
+            status = d.attr('class') == 'panel_on' ? 'off' : 'on';
+        d.attr( 'class', 'panel_' + status );
+        return false;
+    }
 
     /* Compose the content for the panel with movie details.
        Parameters: the node data, and the array containing all nodes
        */
-    var deletedMovies = [];
-
     var heartArray = [];
     function getGameInfo( n, nodeArray ) {
         //landing bar
@@ -126,11 +124,11 @@ function D3ok() {
         if (heartArray.indexOf(n.index) == -1){
 
             info += '<span class="left-icon" id="heart-icon" title="add to favorites" onclick="heartMovie('+n.index+');"><i class="fa fa-heart" id="heart-icon"></i></span>';
-           } else {
+        } else {
             info += '<span class="left-icon" title="add to favorites" onclick="heartMovie('+n.index+');"><i class="fa fa-heart pink" id="heart-icon"></i></span>';
-           }
+        }
 
-        info += '<span class="left-icon" title="remove game from graph" onclick="removeMovie('+n.index+');"><i class="fa fa-trash"></i></span>'
+        info += '<span class="left-icon" title="remove game from graph" onclick="removeMovie('+n.index+', true);"><i class="fa fa-trash"></i></span>'
             + '</div>';
 
         //cover
@@ -142,8 +140,8 @@ function D3ok() {
                 + '" title="' 
                 + n.label 
                 + '" onError="imageError(' 
-                + n.title 
-                + ');"/></div>';
+                        + n.title 
+                        + ');"/></div>';
         else
             info += '<div class=t style="float: right">' + n.title + '</div></div>';
 
@@ -177,9 +175,9 @@ function D3ok() {
         info += "<ul>";
 
         n.links.forEach( function(idx) {
-            if (deletedMovies.indexOf(idx) == -1){
+            if (removedNodes.indexOf(idx) == -1){
                 info += '<li><a href="javascript:void(0);" onclick="selectMovie('  
-                    + idx + ',true);">' + nodeArray[idx].label + '</a></li>'
+            + idx + ',true);">' + nodeArray[idx].label + '</a></li>'
             } else {
                 info += '<li>' + nodeArray[idx].label + '</li>'
             }
@@ -190,14 +188,14 @@ function D3ok() {
 
         //genres
         if (n.genres.length > 0){
-        info += '<div class=f><span class=l>Genres</span>: ';
+            info += '<div class=f><span class=l>Genres</span>: ';
 
-        info += "<ul>";
+            info += "<ul>";
             for (var i = 0; i < n.genres.length; i++){
                 info += '<li>' + n.genres[i].description + '</li>';
             }
-        info += "</ul>";
-        info += '</div>';
+            info += "</ul>";
+            info += '</div>';
         }
 
         if( n.description )
@@ -208,14 +206,14 @@ function D3ok() {
     }
 
     // *************************************************************************
-       d3.json(
+    d3.json(
             'data/results.json',
             function(data) {
                 // Declare the variables pointing to the node & link arrays
                 var nodeArray = data.nodes;
                 var linkArray = data.links;
 
-    minScoreWeight = 
+                minScoreWeight = 
         Math.min.apply( null, nodeArray.map( function(n) {return n["rating"]["score"];} ) );
     maxScoreWeight = 
         Math.max.apply( null, nodeArray.map( function(n) {return n["rating"]["score"];} ) );
@@ -234,7 +232,7 @@ function D3ok() {
         .links(linkArray)
         .start();
 
-        // A couple of scales for node radius & edge width
+    // A couple of scales for node radius & edge width
     var node_size = d3.scale.linear()
         .domain([minScoreWeight, maxScoreWeight])   // we know score is in this domain
         .range([5, 16]) //good size
@@ -256,58 +254,67 @@ function D3ok() {
             .on("zoom", doZoom) );
 
     // ------- Create the elements of the layout (links and nodes) ------
-    var networkGraph = svg.append('svg:g').attr('class','grpParent');
+    var networkGraph;
+    var graphLinks;
+    var graphNodes;
+    var graphLabels;
+    setElements(nodeArray, linkArray);
 
-    // links: simple lines
-    var graphLinks = networkGraph.append('svg:g').attr('class','grp gLinks')
-        .selectAll("line")
-        .data(linkArray, function(d) {return d.source.id+'-'+d.target.id;} )
-        .enter().append("line")
-        .style('stroke-width', function(d) { return edge_width(d.weight);} )
-        .attr('class', function(d) {
-            var sourceClass = "l" + d.source.id;
-            var targetClass = "l" + d.target.id;
-            return sourceClass + " " + targetClass + " " + "link";
-        });
+    function setElements(inputNodeArray, inputLinkArray){
+        // links: simple lines
 
-    // nodes: an SVG circle
-    var graphNodes = networkGraph.append('svg:g').attr('class','grp gNodes')
-        .selectAll("circle")
-        .data( nodeArray, function(d){ return d.id; } )
-        .enter().append("svg:circle")
-        .attr('id', function(d) { return "c" + d.index; } )
-        .attr('class', function(d) { return 'node level'+d.level;} )
-        .attr('r', function(d) { 
-            return (node_size(d["rating"]["score"])); } )
-        .attr('pointer-events', 'all')
-        .on("click", function(d) { showMoviePanel(d); } )
-        .on("mouseover", function(d) { highlightGraphNode(d,true,this);  } )
-        .on("mouseout",  function(d) { highlightGraphNode(d,false,this); } ); //maybe, keeps hover
+        networkGraph = svg.append('svg:g').attr('class','grpParent');
+        graphLinks = networkGraph.append('svg:g').attr('class','grp gLinks')
+            .selectAll("line")
+            .data(inputLinkArray, function(d) {return d.source.id+'-'+d.target.id;} )
+            .enter().append("line")
+            .style('stroke-width', function(d) { return edge_width(d.weight);} )
+            .attr('class', function(d) {
+                var sourceClass = "l" + d.source.id;
+                var targetClass = "l" + d.target.id;
+                return sourceClass + " " + targetClass + " " + "link";
+            });
 
-    // labels: a group with two SVG text: a title and a shadow (as background)
-    var graphLabels = networkGraph.append('svg:g').attr('class','grp gLabel')
-        .selectAll("g.label")
-        .data( nodeArray, function(d){ return d.label;} )
-        .enter().append("svg:g")
-        .attr('id', function(d) { return "l" + d.index; } )
-        .attr('class','label');
+        // nodes: an SVG circle
+        graphNodes = networkGraph.append('svg:g').attr('class','grp gNodes')
+            .selectAll("circle")
+            .data( inputNodeArray, function(d){ return d.id; } )
+            .enter().append("svg:circle")
+            .attr('id', function(d) { return "c" + d.index; } )
+            .attr('class', function(d) { return 'node level'+d.level;} )
+            .attr('r', function(d) { 
+                return (node_size(d["rating"]["score"])); } )
+            .attr('pointer-events', 'all')
+            .on("click", function(d) { showMoviePanel(d); } )
+            .on("mouseover", function(d) { highlightGraphNode(d,true,this);  } )
+            .on("mouseout",  function(d) { highlightGraphNode(d,false,this); } ); //maybe, keeps hover
 
-    shadows = graphLabels.append('svg:text')
-        .attr('x','-2em')
-        .attr('y','-.3em')
-       // .attr('pointer-events', 'none') // they go to the circle beneath
-        .attr('id', function(d) { return "lb" + d.index; } )
-        .attr('class','nshadow')
-        .text( function(d) { return d.label; } );
+        // labels: a group with two SVG text: a title and a shadow (as background)
+        graphLabels = networkGraph.append('svg:g').attr('class','grp gLabel')
+            .selectAll("g.label")
+            .data( inputNodeArray, function(d){ return d.label;} )
+            .enter().append("svg:g")
+            .attr('id', function(d) { return "l" + d.index; } )
+            .attr('class','label');
 
-    labels = graphLabels.append('svg:text')
-        .attr('x','-2em')
-        .attr('y','-.3em')
-        .attr('pointer-events', 'none') // they go to the circle beneath
-        .attr('id', function(d) { return "lf" + d.index; } )
-        .attr('class','nlabel')
-        .text( function(d) { return d.label; } );
+        shadows = graphLabels.append('svg:text')
+            .attr('x','-2em')
+            .attr('y','-.3em')
+            // .attr('pointer-events', 'none') // they go to the circle beneath
+            .attr('id', function(d) { return "lb" + d.index; } )
+            .attr('class','nshadow')
+            .text( function(d) { return d.label; } );
 
+        labels = graphLabels.append('svg:text')
+            .attr('x','-2em')
+            .attr('y','-.3em')
+            .attr('pointer-events', 'none') // they go to the circle beneath
+            .attr('id', function(d) { return "lf" + d.index; } )
+            .attr('class','nlabel')
+            .text( function(d) { return d.label; } );
+
+        force.start();
+    }
 
     /* --------------------------------------------------------------------- */
     /* Select/unselect a node in the network graph.
@@ -379,7 +386,7 @@ function D3ok() {
             d3.select('#c' + idx)
                 .style('fill', '#a7dbd8');
         }
-               
+
         var heartIdx = heartArray.indexOf(idx);
         if (heartIdx > -1){
             heartArray.splice(heartIdx, 1);
@@ -444,7 +451,7 @@ function D3ok() {
                     for (i = 0; i < curNode.genres.length - 1; i++){
                         info += curNode.genres[i].description + ', ';
                     }
-                     
+
                     info += curNode.genres[i].description;
                     info += '</li>';
                 }
@@ -461,7 +468,7 @@ function D3ok() {
                 info += "<p><a href='" + getSteamUrl(curNode.steam_id) 
                     + "' class='btn btn-primary' role='button'>See on Steam</a> <span class='btn btn-default' role='button' onClick='removeFromFavorites("
                     + heartArray[curIdx] + ");'>Remove from Favorites</span></p>";
-                
+
                 info += "</div></div></div>";
 
                 curIdx++;
@@ -472,37 +479,43 @@ function D3ok() {
     }
 
     /* Removes a game from the graph */
-    removeMovie = function( idx ){
+    removeMovie = function( idx , removePermanent){
         var node = d3.select('#c' + idx);
         var label  = d3.select( '#l' + idx );
 
         var links = d3.selectAll('.l' + idx);
 
-        //we remove all the lonely nodes
-        for (i = 0; i < links[0].length; i++){
-            var classList = links[0][i]["classList"];
+        if (removePermanent == true){
+            //we remove all the lonely nodes
+            for (i = 0; i < links[0].length; i++){
+                var classList = links[0][i]["classList"];
 
-            var otherLink = classList[0];
-            var otherAttr = 0;
+                var otherLink = classList[0];
+                var otherAttr = 0;
 
-            if (otherLink == "l" + idx){
-                otherLink = classList[1];
-                otherAttr = 1;
+                if (otherLink == "l" + idx){
+                    otherLink = classList[1];
+                    otherAttr = 1;
+                }
+
+                var otherLinks = d3.selectAll('.' + otherLink);
+                if (otherLinks[0].length == 1){
+                    var linkClass = otherLinks[0][0]["classList"][otherAttr];
+                    var nodeIdx = linkClass.substring(1, linkClass.length); 
+                    d3.select('#c' + nodeIdx).remove();
+                    d3.select('#l' + nodeIdx).remove();
+                }
             }
+        } 
 
-            var otherLinks = d3.selectAll('.' + otherLink);
-            if (otherLinks[0].length == 1){
-                var linkClass = otherLinks[0][0]["classList"][otherAttr];
-                var nodeIdx = linkClass.substring(1, linkClass.length); 
-                d3.select('#c' + nodeIdx).remove();
-                d3.select('#l' + nodeIdx).remove();
-                deletedMovies.push(nodeIdx);
+        //update();
+        removedNodes.push(idx);
+        for (var i = 0; i < linkArray.length; i++){
+            if (linkArray[i]["source"]["id"] == idx || linkArray[i]["target"]["id"] == idx){
+                removedLinks.push(i);
             }
         }
-    
-        //update();
-        deletedMovies.push(idx);
-        node.remove();
+         node.remove();
         label.remove();
         links.remove();
         /* Then, remove all links */
@@ -528,19 +541,17 @@ function D3ok() {
         }
     }
 
-    //populate name array
-    populateNameArray();
-
-    $( "#gameSearch" ).autocomplete({
-      source: nameArray
+       $( "#gameSearch" ).autocomplete({
+        source: nameArray
     });
 
     searchSelectMovie = function(){
         var gameName = document.getElementById("gameSearch").value;
-        var index = nameArray.indexOf(gameName);
-    
-        if (index != -1){
-            selectMovie(index, true);
+        for (var i = 0; i < nodeArray.length; i++){
+            if (nodeArray[i].label == gameName){
+
+            selectMovie(i, true);
+            }
         }
     }
 
@@ -637,21 +648,100 @@ function D3ok() {
         repositionGraph( offset, undefined, 'drag' );
     }
 
-
     /**** SLIDER **/
     $(document).ready(function(){
-        var maxPrice = 0;
-        var minPrice = 100000000;
+ //populate name array
+    populateNameArray();
 
-            prices = [];
+
+        genres = [];
         for (var i = 0; i < nodeArray.length; i++){
-            if (nodeArray[i]["price"]){
-                prices.push(nodeArray[i]["price"]);
-                if (prices[i] > maxPrice) maxPrice = prices[i];
-                if (prices[i] < minPrice) minPrice = prices[i];
+            if (nodeArray[i]["genres"]){
+                for (var j = 0 ; j < nodeArray[i]["genres"].length; j++){
+                    genreName = nodeArray[i]["genres"][j]["description"];
+                    if (genres.indexOf(genreName) == -1){
+                        genres.push(genreName);
+                    }
+                }
             }           
         }
-           });
+
+        text = "";
+        for(var i = 0; i < genres.length; i++){
+            text += "<div class='label label-primary genreTag' id='" + genres[i] + "'>" + genres[i] + "</div>";
+        }
+
+        $("#genreTags").append(text);
+
+        $('.genreTag').on('click', function(){
+            var genre = this.id;
+            $("#" + genre).toggleClass("label-primary");
+            $("#" + genre).toggleClass("label-default");
+            //remove from
+            if ($('#' + genre).hasClass('label-default')){
+                //first, see if there are any to remove
+                for (var i = 0; i < nodeArray.length; i++){
+                        var curGenres = [];
+                        for (var j = 0; j < nodeArray[i]["genres"].length; j++){
+                            curGenres.push(nodeArray[i]["genres"][j]["description"]);
+                        }
+
+                        if (curGenres.indexOf(genre) > -1){
+                            d3.select('#c' + i).remove();
+                            removeMovie(i, false);
+                        }
+                    } 
+            }
+
+            //recover
+            else {
+                var recoverNodeArray = [];
+                var recoverLinkArray = [];
+                for (var i = 0; i < removedNodes.length; i++){
+                    var curNode = nodeArray[removedNodes[i]];
+                        var curGenres = [];
+                        for (var j = 0; j < curNode["genres"].length; j++){
+                            curGenres.push(curNode["genres"][j]["description"]);
+                        }
+                        if (curGenres.indexOf(genre) > -1){
+                            //we no longer wish to remove
+                            removedNodes.splice(i, 1);
+                            i = i - 1;
+                            //we also check all links
+
+                        }   
+                        }
+                for (var i = 0; i < removedLinks.length; i++){
+                    var j = removedLinks[i];
+                    var link = linkArray[j];
+                    if (removedNodes.indexOf(link["source"]["id"]) == -1 && removedNodes.indexOf(link["target"]["id"]) == -1){
+                        removedLinks.splice(i, 1);
+                        i = i - 1;
+                    }
+                }
+
+                //then we make the recover array
+                for (var i = 0; i < nodeArray.length; i++){
+                    if (removedNodes.indexOf(i) == -1){
+                        recoverNodeArray.push(nodeArray[i]);
+                    }   
+                }
+
+                for (var i = 0; i < linkArray.length; i++){
+                   if (removedLinks.indexOf(i) == -1){
+                        recoverLinkArray.push(linkArray[i]);
+                   }
+                }
+
+                d3.select('.grpParent').remove();
+                setElements(recoverNodeArray, recoverLinkArray);
+            }
+
+
+        });
+
+    });
+
     /* --------------------------------------------------------------------- */
     /* Perform zoom. We do "semantic zoom", not geometric zoom
      * (i.e. nodes do not change size, but get spread out or stretched

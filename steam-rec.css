@@ -1,3 +1,10 @@
+#genreTags div{
+    margin-left:-5px;
+    font-size: 10px;
+    margin-right:20px;
+    padding:10px;
+}
+
 .right-icon{
     float:right;
     padding:3px;
@@ -13,6 +20,10 @@ a:visited{
 
 .pink{
     color: #fa6900;
+}
+
+.gray{
+    background-color: gray;
 }
 
 .fa:hover{
