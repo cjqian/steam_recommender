@@ -25,7 +25,6 @@ var maxRating;
 
 // Do the stuff -- to be called after D3.js has loaded
 function D3ok() {
-
     // Some constants
     var WIDTH = 1200,
         HEIGHT = 900,
@@ -206,8 +205,27 @@ function D3ok() {
     }
 
     // *************************************************************************
+    /* GETS THE ID */
+    var fileLoc = 'data/results.json';
+
+    var query = window.location.search.substring(1);
+    var steamID = query.split("&")[0];
+
+    var http = new XMLHttpRequest();
+    http.open('HEAD', 'http://localhost:8000/data/results_' + steamID + '.json', false);
+    http.send();
+    if (http.status!=404){
+        fileLoc = 'data/results_' + steamID + '.json';
+    }
+    else{
+    http.open("POST", "http://localhost:8080", true);
+        var sentRequest = steamID;
+        console.log(sentRequest);
+        http.send(sentRequest);
+        alert("Request sent! Refresh in like, idk, 3 minutes?");
+    }
     d3.json(
-            'data/results.json',
+            fileLoc,
             function(data) {
                 // Declare the variables pointing to the node & link arrays
                 var nodeArray = data.nodes;
@@ -235,7 +253,7 @@ function D3ok() {
     // A couple of scales for node radius & edge width
     var node_size = d3.scale.linear()
         .domain([minScoreWeight, maxScoreWeight])   // we know score is in this domain
-        .range([5, 16]) //good size
+        .range([6, 18]) //good size
         .clamp(false);
 
     //weight is how closely related two games are
@@ -409,7 +427,6 @@ function D3ok() {
 
         //iterate through all rows
         var nRows = Math.ceil(heartArray.length / 4);
-        console.log("Number of rows: " + nRows + ", " + heartArray.length);
         var curIdx = 0;
         for (var i = 0; i < nRows; i++){
             if (curIdx >= heartArray.length){
@@ -650,6 +667,7 @@ function D3ok() {
 
     /**** SLIDER **/
     $(document).ready(function(){
+ 
  //populate name array
     populateNameArray();
 
@@ -671,8 +689,10 @@ function D3ok() {
             text += "<div class='label label-primary genreTag' id='" + genres[i] + "'>" + genres[i] + "</div>";
         }
 
+        /* LIVE TAB SORTING */
         $("#genreTags").append(text);
-
+        
+        
         $('.genreTag').on('click', function(){
             var genre = this.id;
             $("#" + genre).toggleClass("label-primary");
@@ -739,8 +759,8 @@ function D3ok() {
 
 
         });
-
     });
+
 
     /* --------------------------------------------------------------------- */
     /* Perform zoom. We do "semantic zoom", not geometric zoom

@@ -9,8 +9,14 @@ import json
 import requests
 import HTMLParser
 
+import socket
+s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+s.bind(("localhost", 8080))
+s.listen(1)
+
 html_parser = HTMLParser.HTMLParser()
 
+numLevels = 3
 #set tTitles, a map of titles to their steam APP IDs
 tTitles = {}
 def mapTitles(jsonData):
@@ -139,7 +145,7 @@ def requestGame(steamID, gameTitle):
         return
 
 def setLinks(fObject): 
-    #print ("Setting links for " + fObject["title"])
+    print ("Setting links for " + fObject["title"])
     gameTitle = html_parser.unescape(fObject["title"])
     steamID = fObject["steam_id"] 
 
@@ -187,6 +193,8 @@ def makeLink(fObject, nObject, weight):
     if nObject["id"] in fObject["links"]:
         print(str(fObject["id"]) + " already linked to " + str(nObject["id"]))
         return 
+
+    print("Linking" + str(fObject["id"]) + " and " + str(nObject["id"]))
     fObject["links"].append(nObject["id"])
     nObject["links"].append(fObject["id"])
     
@@ -242,13 +250,14 @@ def setObject(appID, level):
 
     return -1
 
-userID = int(sys.argv[1]) 
-maxNumGames = int(sys.argv[2])
-numLevels = int(sys.argv[3])
 
 #python make_results.py maxNumGames
-def main():
-    
+def makeResults(message): 
+    print(message)
+    messageArray = message.split()
+    userID = int(messageArray[0])
+    maxNumGames = 7
+
     #userID = 76561198008637711
     #userID =76561198060927907
     data = getUserGames(userID)
@@ -283,7 +292,6 @@ def main():
     gameLibrary = []
     for game in gameLib:
         newGame = {}
-        print(game + " IS IN GAME LIB")
         newGame["id"] = game
         newGame["name"] = gameAlias[game]
         newGame["recommendations"] = gameLib[game]
@@ -293,4 +301,14 @@ def main():
     f.write(json.JSONEncoder().encode(gameLibrary))
     f.close()
 
-main()
+while True:
+    conn, addr = s.accept()
+    data = conn.recv(1024)
+    conn.close()
+    
+    #parse message
+    message = data.split('?')[1]
+    message = message[:17]
+    print(message)
+    makeResults(message)
+    print data
